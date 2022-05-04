@@ -1,0 +1,2 @@
+E:\GitHub\TROWEN\obj\Debug\ENMod.csproj.AssemblyReference.cache
+E:\GitHub\TROWEN\obj\Debug\ENMod.csproj.CoreCompileInputs.cache

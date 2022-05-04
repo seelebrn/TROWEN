@@ -33,79 +33,40 @@ namespace ENMod
 
         StoryFlow[] source2 = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
         public static Dictionary<string, string> translationDict;
-        public string TranslationDictPath = Path.Combine(BepInEx.Paths.PluginPath, "Translations/translations.txt");
-        public string FailedRegistry = Path.Combine(BepInEx.Paths.PluginPath, "Translations/failed.txt");
-
-       
-
-     //   [SerializeField]
-     //   public GameObject stepPrefab = GameObject.Find("StepPart_Mission");
-
-
+        public string TranslationDictPath = Path.Combine(Paths.PluginPath, "Translations/translations.txt");
+        public string FailedRegistry = Path.Combine(Paths.PluginPath, "Translations/failed.txt");
 
         public void Awake()
         {
             Debug.Log("CadenzaKun is Awake!");
             UnityEngine.Object[] gameobjects = ResourceManager.LoadAllAssets<UnityEngine.Object>(ResourceType.MainStories, "");
 
-            Debug.Log("Count = " + gameobjects.Count());
-
-            foreach (UnityEngine.Object n in gameobjects)
-            {
-                
-                Debug.Log("Names = " + n.name);
-                Debug.Log("Type = " + n.GetType());
-
-            }
-            StoryFlow[] source2 = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
-            foreach(StoryFlow x in source2)
-            {
-                for(int i=0; i<x.nodes.Count; i++)
-                { 
-                Debug.Log("Node = " + x.nodes[i].ToString());
-
-                }
-            }
-
             Debug.Log("TranslationDictPath = " + TranslationDictPath);
             translationDict = FileToDictionary(TranslationDictPath);
-            string dictdump = Path.Combine(BepInEx.Paths.PluginPath, "dictdump.txt");
-
-            File.WriteAllLines(
-           "C:\\Program Files (x86)\\Steam\\steamapps\\common\\江湖余生\\BepInEx\\plugins\\dictdump.txt",
-           translationDict.Select(kvp => string.Format("{0};{1}", kvp.Key, kvp.Value)));
+            string dictdump = Path.Combine(Paths.PluginPath, "dictdump.txt");
+            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            File.WriteAllLines($"{currentPath}\\BepInEx\\plugins\\dictdump.txt", translationDict.Select(kvp => $"{ kvp.Key};{ kvp.Value}"));
             Logger.LogInfo("Hello World ! Welcome to Cadenza's plugin !");
-            var harmony = new Harmony("Cadenza.TROW.EnMod");
+            Harmony harmony = new Harmony("Cadenza.TROW.EnMod");
             harmony.PatchAll();
-
         }
-
 
         public void Prepare()
         {
             using (StreamWriter sw = File.AppendText(FailedRegistry))
             {
-                string Hello = "Hey ! Below, you'll find any untranslated lines in the .dll hardcoded lines (tooltips only) !";
-                sw.Write(Hello);
-                sw.Write(Environment.NewLine);
-                sw.Write("---");
-                sw.Write(Environment.NewLine);
-                sw.Write(Environment.NewLine);
+                string hello = "Hey ! Below, you'll find any untranslated lines in the .dll hardcoded lines (tooltips only) !";
+                sw.Write($"{hello}\n---\n\n\n");
             }
         }
 
-
-
-
-
-
         public static Dictionary<string, string> FileToDictionary(string dir)
         {
-            Debug.Log(BepInEx.Paths.PluginPath);
+            Debug.Log(Paths.PluginPath);
 
             Dictionary<string, string> dict = new Dictionary<string, string>();
 
-            IEnumerable<string> lines = File.ReadLines(Path.Combine(BepInEx.Paths.PluginPath, "Translations", dir));
+            IEnumerable<string> lines = File.ReadLines(Path.Combine(Paths.PluginPath, "Translations", dir));
 
             foreach (string line in lines)
             {
@@ -121,45 +82,10 @@ namespace ENMod
             }
 
             return dict;
-
-            //return File.ReadLines(Path.Combine(BepInEx.Paths.PluginPath, "Translations", dir))
-            //    .Select(line =>
-            //    {
-            //        var arr = line.Split('¤');
-            //        return new KeyValuePair<string, string>(Regex.Replace(arr[0], @"\t|\n|\r", ""), arr[1]);
-            //    })
-            //    .GroupBy(kvp => kvp.Key)
-            //    .Select(x => x.First())
-            //    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, comparer);
         }
-        public void Hello()
-        {
-
-        }
-
-        //return File.ReadLines(Path.Combine(BepInEx.Paths.PluginPath, "Translations", dir))
-        //    .Select(line =>
-        //    {
-        //        var arr = line.Split('¤');
-        //        return new KeyValuePair<string, string>(Regex.Replace(arr[0], @"\t|\n|\r", ""), arr[1]);
-        //    })
-        //    .GroupBy(kvp => kvp.Key)
-        //    .Select(x => x.First())
-        //    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, comparer);
-
-
     }
 
-
-
-
-
-        
-
-
-
     [HarmonyPatch]
-
     static class LogTooltips
     {
         static IEnumerable<MethodBase> TargetMethods()
@@ -191,7 +117,7 @@ namespace ENMod
             yield return AccessTools.Method(typeof(SingleFactionItem), "OnClickGetReward");
             yield return AccessTools.Method(typeof(TrainWindow), "Train");
             yield return AccessTools.Method(typeof(YiZhanWindow), "SetOut");
-            
+
 
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -203,33 +129,33 @@ namespace ENMod
                 {
                     Debug.Log("operand = " + codes[i].operand.ToString());
                 }
-                if(codes[i].opcode == OpCodes.Ldstr && codes[i].operand != null && codes[i].operand != "")
-                { 
+                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand != null && codes[i].operand != "")
+                {
 
                     if (codes[i].opcode == OpCodes.Ldstr && Main.translationDict.ContainsKey(codes[i].operand.ToString()))
                     {
-                    codes[i].operand = Main.translationDict[codes[i].operand.ToString()];
+                        codes[i].operand = Main.translationDict[codes[i].operand.ToString()];
 
 
                     }
-                    
-                else
-                   {
-                    if (codes[i].opcode == OpCodes.Ldstr && !Main.translationDict.ContainsKey(codes[i].operand.ToString()) && Helpers.IsChinese(codes[i].operand.ToString()))
-                    {
-                        string FailedRegistry = Path.Combine(BepInEx.Paths.PluginPath, "failed.txt");
-                        Debug.Log(FailedRegistry);
-                        using (StreamWriter sw = File.AppendText(FailedRegistry))
-                        {
-                            sw.Write(codes[i].operand.ToString());
-                            sw.Write(Environment.NewLine);
-                        }  
-                    }
+
                     else
                     {
-                        Debug.Log("Null");
+                        if (codes[i].opcode == OpCodes.Ldstr && !Main.translationDict.ContainsKey(codes[i].operand.ToString()) && Helpers.IsChinese(codes[i].operand.ToString()))
+                        {
+                            string FailedRegistry = Path.Combine(Paths.PluginPath, "failed.txt");
+                            Debug.Log(FailedRegistry);
+                            using (StreamWriter sw = File.AppendText(FailedRegistry))
+                            {
+                                sw.Write(codes[i].operand.ToString());
+                                sw.Write(Environment.NewLine);
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("Null");
+                        }
                     }
-                }
                 }
 
             }
@@ -239,7 +165,6 @@ namespace ENMod
     }
 
     [HarmonyPatch]
-
     static class SkillDesc
     {
         static IEnumerable<MethodBase> TargetMethods()
@@ -295,7 +220,7 @@ namespace ENMod
                             Debug.Log("Null");
                         }
                     }*/
-                
+
                 }
 
 
@@ -304,78 +229,7 @@ namespace ENMod
 
 
         }
-    }/*
-    [HarmonyPatch(typeof(StepPart_MissionWindow), "GetAvailableStepStruct")]
-    static class Mumu
-    {
-        static AccessTools.FieldRef<StepPart_MissionWindow, GameObject> stepPrefabRef =
-        AccessTools.FieldRefAccess<StepPart_MissionWindow, GameObject>("stepPrefab");
-        static AccessTools.FieldRef<StepPart_MissionWindow, Transform> stepRootRef =
-        AccessTools.FieldRefAccess<StepPart_MissionWindow, Transform>("stepRoot");
-        static AccessTools.FieldRef<StepPart_MissionWindow, List<StepPart_MissionWindow.StepStruct>> stepsRef = 
-        AccessTools.FieldRefAccess<StepPart_MissionWindow, List<StepPart_MissionWindow.StepStruct>>("steps");
-
-
-
-        static void Prefix(StepPart_MissionWindow __instance)
-        {
-            List<StepPart_MissionWindow.StepStruct> steps = new List<StepPart_MissionWindow.StepStruct>();
-            var stepPrefab = stepPrefabRef(__instance);
-            var stepRoot = stepRootRef(__instance);
-
-            Debug.Log("HarmonyStepRoot = " + stepRoot);
-            Debug.Log("HarmonyStepPrefab = " + stepPrefab);
-            
-
-            StepPart_MissionWindow.StepStruct zaza = stepPrefab.GetComponent<StepPart_MissionWindow.StepStruct>();
-            if(zaza.stepDes.text != null)
-            { 
-            Debug.Log("zaza = " + zaza.stepDes);
-            }
-            StepPart_MissionWindow.StepStruct zaza1 = stepPrefab.GetComponentInChildren<StepPart_MissionWindow.StepStruct>();
-            if (zaza1.stepDes.text != null)
-            {
-                Debug.Log("zaza1 = " + zaza.stepDes);
-            }
-
-            // stepStruct2 = new StepPart_MissionWindow.StepStruct(gameObject2.GetComponent<UnityEngine.UI.Text>(), gameObject2.GetComponentInChildren<UnityEngine.UI.Image>(true));
-
-
-        }
-    }*/
-    /*
-    [HarmonyPatch(typeof(FlowProgress), "NotReallyActivated")]
-    static class FlowProgress_patch
-    {
-        static AccessTools.FieldRef<FlowProgress, List<string>> completedListRef =
-            AccessTools.FieldRefAccess<FlowProgress, List<string>>("completedList");
-
-        static void Postfix(FlowProgress __instance)
-        {
-            //GameData GameData = Singleton<GameManager>.Main
-            var completedList = completedListRef(__instance);
-            foreach(string s in completedList)
-            {
-                StoryFlow[] source = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
-                //FlowProgress gamedata = Singleton<GameManager>.Instance.GameData.MainPlotProgress;
-                //Debug.Log("MainPlotProgress = " + gamedata);
-                foreach (StoryFlow x in source)
-                { 
-
-                    Debug.Log("flow = " + x);
-                    foreach(FlowNode t in x.nodes)
-                    {
-                        if (t.baseInfo != null && !t.baseInfo.updateLogInfo.IsNullOrEmpty())
-                        { 
-                            Debug.Log("GIMMESTRINGS = " + t.baseInfo.updateLogInfo);
-                        }
-                    }
-                }
-                Debug.Log("Harmonycompletedlist = " + s);
-            }
-        }
     }
-    */
 
     public static class Helpers
     {
@@ -386,6 +240,3 @@ namespace ENMod
         }
     }
 }
- 
-
-
