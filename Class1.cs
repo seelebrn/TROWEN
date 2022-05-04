@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +16,7 @@ using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Sirenix.Serialization;
 
+
 namespace ENMod
 {
 
@@ -29,40 +30,42 @@ namespace ENMod
         public const string pluginName = "FJ ENMod Continued";
         public const string pluginVersion = "0.5";
 
+
+        StoryFlow[] source2 = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
         public static Dictionary<string, string> translationDict;
         public string TranslationDictPath = Path.Combine(BepInEx.Paths.PluginPath, "Translations/translations.txt");
         public string FailedRegistry = Path.Combine(BepInEx.Paths.PluginPath, "Translations/failed.txt");
-        public Transform stepRoot;
+
+       
+
+     //   [SerializeField]
+     //   public GameObject stepPrefab = GameObject.Find("StepPart_Mission");
+
+
 
         public void Awake()
-        {   
+        {
             Debug.Log("CadenzaKun is Awake!");
-            StoryFlow[] source = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.MainStories, string.Empty);
+            UnityEngine.Object[] gameobjects = ResourceManager.LoadAllAssets<UnityEngine.Object>(ResourceType.MainStories, "");
+
+            Debug.Log("Count = " + gameobjects.Count());
+
+            foreach (UnityEngine.Object n in gameobjects)
+            {
+                
+                Debug.Log("Names = " + n.name);
+                Debug.Log("Type = " + n.GetType());
+
+            }
             StoryFlow[] source2 = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
-            GameObject[] source3 = ResourceManager.LoadAllAssets<GameObject>(ResourceType.Prefab, string.Empty);
-            
-
-            source.ToList<StoryFlow>().ForEach(delegate (StoryFlow x)
+            foreach(StoryFlow x in source2)
             {
-                //StoryFlowSystem.AllMainStories.Add(x.flowName, x);
-               
-            });
-            source2.ToList<StoryFlow>().ForEach(delegate (StoryFlow x)
-            {
-                //StoryFlowSystem.AllSideStories.Add(x.flowName, x);
-                
-            });
-            StepPart_MissionWindow.StepStruct availableStepStruct;
+                for(int i=0; i<x.nodes.Count; i++)
+                { 
+                Debug.Log("Node = " + x.nodes[i].ToString());
 
-            source3.ToList<GameObject>().ForEach(delegate (GameObject n)
-            {
-                Debug.Log("n.name = " + n.name);
-                
-            });
-            
-
-
-
+                }
+            }
 
             Debug.Log("TranslationDictPath = " + TranslationDictPath);
             translationDict = FileToDictionary(TranslationDictPath);
@@ -301,8 +304,78 @@ namespace ENMod
 
 
         }
-    }
+    }/*
+    [HarmonyPatch(typeof(StepPart_MissionWindow), "GetAvailableStepStruct")]
+    static class Mumu
+    {
+        static AccessTools.FieldRef<StepPart_MissionWindow, GameObject> stepPrefabRef =
+        AccessTools.FieldRefAccess<StepPart_MissionWindow, GameObject>("stepPrefab");
+        static AccessTools.FieldRef<StepPart_MissionWindow, Transform> stepRootRef =
+        AccessTools.FieldRefAccess<StepPart_MissionWindow, Transform>("stepRoot");
+        static AccessTools.FieldRef<StepPart_MissionWindow, List<StepPart_MissionWindow.StepStruct>> stepsRef = 
+        AccessTools.FieldRefAccess<StepPart_MissionWindow, List<StepPart_MissionWindow.StepStruct>>("steps");
 
+
+
+        static void Prefix(StepPart_MissionWindow __instance)
+        {
+            List<StepPart_MissionWindow.StepStruct> steps = new List<StepPart_MissionWindow.StepStruct>();
+            var stepPrefab = stepPrefabRef(__instance);
+            var stepRoot = stepRootRef(__instance);
+
+            Debug.Log("HarmonyStepRoot = " + stepRoot);
+            Debug.Log("HarmonyStepPrefab = " + stepPrefab);
+            
+
+            StepPart_MissionWindow.StepStruct zaza = stepPrefab.GetComponent<StepPart_MissionWindow.StepStruct>();
+            if(zaza.stepDes.text != null)
+            { 
+            Debug.Log("zaza = " + zaza.stepDes);
+            }
+            StepPart_MissionWindow.StepStruct zaza1 = stepPrefab.GetComponentInChildren<StepPart_MissionWindow.StepStruct>();
+            if (zaza1.stepDes.text != null)
+            {
+                Debug.Log("zaza1 = " + zaza.stepDes);
+            }
+
+            // stepStruct2 = new StepPart_MissionWindow.StepStruct(gameObject2.GetComponent<UnityEngine.UI.Text>(), gameObject2.GetComponentInChildren<UnityEngine.UI.Image>(true));
+
+
+        }
+    }*/
+    /*
+    [HarmonyPatch(typeof(FlowProgress), "NotReallyActivated")]
+    static class FlowProgress_patch
+    {
+        static AccessTools.FieldRef<FlowProgress, List<string>> completedListRef =
+            AccessTools.FieldRefAccess<FlowProgress, List<string>>("completedList");
+
+        static void Postfix(FlowProgress __instance)
+        {
+            //GameData GameData = Singleton<GameManager>.Main
+            var completedList = completedListRef(__instance);
+            foreach(string s in completedList)
+            {
+                StoryFlow[] source = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
+                //FlowProgress gamedata = Singleton<GameManager>.Instance.GameData.MainPlotProgress;
+                //Debug.Log("MainPlotProgress = " + gamedata);
+                foreach (StoryFlow x in source)
+                { 
+
+                    Debug.Log("flow = " + x);
+                    foreach(FlowNode t in x.nodes)
+                    {
+                        if (t.baseInfo != null && !t.baseInfo.updateLogInfo.IsNullOrEmpty())
+                        { 
+                            Debug.Log("GIMMESTRINGS = " + t.baseInfo.updateLogInfo);
+                        }
+                    }
+                }
+                Debug.Log("Harmonycompletedlist = " + s);
+            }
+        }
+    }
+    */
 
     public static class Helpers
     {
