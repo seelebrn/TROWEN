@@ -38,6 +38,24 @@ namespace ENMod
 
         public void Awake()
         {
+            //This should be kept if necessary, it is used to fetch all Random Events Options Buttons Text (and results).
+            /*               OptionQiyuAssset[] array = ResourceManager.LoadAllAssets<OptionQiyuAssset>(ResourceType.Qiyu, string.Empty);
+
+                            foreach (OptionQiyuAssset x in array)
+                            {
+                            //    Debug.Log("GIMMEMOARSTRINGS QiyuOption = " + x.QiyuOption);
+
+                                foreach(QiyuOption f in x.QiyuOption)
+                            {
+                                Debug.Log("GIMMEMOARSTRINGS optionDes = " + f.optionDes);
+                                    foreach(QiyuOptionResult v in f.OptionResults)
+                                {
+                                    Debug.Log("What is this s*** ? = " + v.resultDes);
+                                }
+
+                            }
+                        }
+            */
             Debug.Log("CadenzaKun is Awake!");
             UnityEngine.Object[] gameobjects = ResourceManager.LoadAllAssets<UnityEngine.Object>(ResourceType.MainStories, "");
 
@@ -165,7 +183,7 @@ namespace ENMod
     }
 
     [HarmonyPatch]
-    static class SkillDesc
+    static class SkillDesc_and_BlackSmith
     {
         static IEnumerable<MethodBase> TargetMethods()
         {
@@ -176,6 +194,7 @@ namespace ENMod
             yield return AccessTools.Method(typeof(DesPack_PractiseWindow), "GetCost");
             yield return AccessTools.Method(typeof(DesPack_PractiseWindow), "GetCastTimes");
             yield return AccessTools.Method(typeof(DesPack_PractiseWindow), "GetTargetDes");
+            yield return AccessTools.Method(typeof(EventPack_RandomEventWindow), "ShowEventDes");
 
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -231,6 +250,40 @@ namespace ENMod
         }
     }
 
+ //Keeping This In Case I Need To Re-Export The Main & Side Quests Desc
+    /*
+[HarmonyPatch(typeof(FlowProgress), "NotReallyActivated")]
+static class FlowProgress_patch
+{
+    static AccessTools.FieldRef<FlowProgress, List<string>> completedListRef =
+        AccessTools.FieldRefAccess<FlowProgress, List<string>>("completedList");
+
+    static void Postfix(FlowProgress __instance)
+    {
+        //GameData GameData = Singleton<GameManager>.Main
+        var completedList = completedListRef(__instance);
+        foreach(string s in completedList)
+        {
+            StoryFlow[] source = ResourceManager.LoadAllAssets<StoryFlow>(ResourceType.SideStories, string.Empty);
+            //FlowProgress gamedata = Singleton<GameManager>.Instance.GameData.MainPlotProgress;
+            //Debug.Log("MainPlotProgress = " + gamedata);
+            foreach (StoryFlow x in source)
+            { 
+
+                Debug.Log("flow = " + x);
+                foreach(FlowNode t in x.nodes)
+                {
+                    if (t.baseInfo != null && !t.baseInfo.updateLogInfo.IsNullOrEmpty())
+                    { 
+                        Debug.Log("GIMMESTRINGS = " + t.baseInfo.updateLogInfo);
+                    }
+                }
+            }
+            Debug.Log("Harmonycompletedlist = " + s);
+        }
+    }
+}
+*/
     public static class Helpers
     {
         public static readonly Regex cjkCharRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}");
