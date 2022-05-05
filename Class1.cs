@@ -63,7 +63,7 @@ namespace ENMod
             translationDict = FileToDictionary(TranslationDictPath);
             string dictdump = Path.Combine(Paths.PluginPath, "dictdump.txt");
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            File.WriteAllLines($"{currentPath}\\BepInEx\\plugins\\dictdump.txt", translationDict.Select(kvp => $"{ kvp.Key};{ kvp.Value}"));
+            File.WriteAllLines($"{currentPath}\\dictdump.txt", translationDict.Select(kvp => $"{ kvp.Key};{ kvp.Value}"));
             Logger.LogInfo("Hello World ! Welcome to Cadenza's plugin !");
             Harmony harmony = new Harmony("Cadenza.TROW.EnMod");
             harmony.PatchAll();
@@ -145,16 +145,17 @@ namespace ENMod
             {
                 if (codes[i].opcode == OpCodes.Ldstr)
                 {
-                    Debug.Log("operand = " + codes[i].operand.ToString());
+                    Debug.Log("operand1 = " + codes[i].operand.ToString());
                 }
                 if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand != null && codes[i].operand != "")
                 {
 
                     if (codes[i].opcode == OpCodes.Ldstr && Main.translationDict.ContainsKey(codes[i].operand.ToString()))
                     {
+                        Debug.Log("Found String = " + Main.translationDict[codes[i].operand.ToString()]);
                         codes[i].operand = Main.translationDict[codes[i].operand.ToString()];
 
-
+                        Debug.Log("Updated String = " + codes[i].operand.ToString());
                     }
 
                     else
@@ -202,17 +203,20 @@ namespace ENMod
             var codes = new List<CodeInstruction>(instructions);
             for (int i = 0; i < codes.Count - 1; i++)
             {
-                if (codes[i].opcode == OpCodes.Ldstr)
-                {
-                    Debug.Log("operand = " + codes[i].operand.ToString());
-                }
-                if (codes[i].opcode == OpCodes.Ldstr)
-                {
 
-                    if (Main.translationDict.ContainsKey(codes[i].operand.ToString()))
+                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand.ToString() != "\n" )
+                {
+                    Debug.Log("operand2 = " + codes[i].operand.ToString());
+
+
+
+                    if (Main.translationDict.ContainsKey(codes[i].operand.ToString().Replace("\n", "\\n")))
                     {
+                        codes[i].operand = codes[i].operand.ToString().Replace("\n", "\\n");
                         Debug.Log("Found Matching String ! = " + Main.translationDict[codes[i].operand.ToString()]);
                         codes[i].operand = Main.translationDict[codes[i].operand.ToString()];
+                        codes[i].operand = (codes[i].operand.ToString().Replace("\\n", "\n"));
+
                         Debug.Log("Updated String ! = " + codes[i].operand.ToString());
 
 
@@ -250,7 +254,73 @@ namespace ENMod
         }
     }
 
- //Keeping This In Case I Need To Re-Export The Main & Side Quests Desc
+    [HarmonyPatch]
+    static class Partners_CharacterSheet_Exploration
+    {
+        static IEnumerable<MethodBase> TargetMethods()
+        {
+            yield return AccessTools.Method(typeof(FellowPack_CharWindow), "UpdateEquipSummary");
+            yield return AccessTools.Method(typeof(BasePack_CharWindow), "InitPanel");
+            yield return AccessTools.Method(typeof(ExploreWindow), "GetMoney");
+            yield return AccessTools.Method(typeof(ExploreWindow), "RewardMiJiOrAcc");
+
+
+
+        }
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            for (int i = 0; i < codes.Count - 1; i++)
+            {
+
+                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand.ToString() != "\n" && codes[i].operand != null && codes[i].operand != "")
+                {
+                    Debug.Log("operand 3 = " + codes[i].operand.ToString());
+
+                    if (Main.translationDict.ContainsKey(codes[i].operand.ToString().Replace("\n","\\n")))
+                    {
+                        codes[i].operand = codes[i].operand.ToString().Replace("\n", "\\n");
+                        Debug.Log("Found Matching String ! = " + Main.translationDict[codes[i].operand.ToString()]);
+                        codes[i].operand = Main.translationDict[codes[i].operand.ToString()];
+                        codes[i].operand = (codes[i].operand.ToString().Replace("\\n", "\n"));
+
+                        Debug.Log("Updated String ! = " + codes[i].operand.ToString());
+
+
+                    }
+                    else
+                    {
+                        Debug.Log("Not found");
+                    }
+                    /*
+                    else
+                    {
+                        if (codes[i].opcode == OpCodes.Ldstr && !Main.translationDict.ContainsKey(codes[i].operand.ToString()) && Helpers.IsChinese(codes[i].operand.ToString()))
+                        {
+                            string FailedRegistry = Path.Combine(BepInEx.Paths.PluginPath, "failed.txt");
+                            Debug.Log(FailedRegistry);
+                            using (StreamWriter sw = File.AppendText(FailedRegistry))
+                            {
+                                sw.Write(codes[i].operand.ToString());
+                                sw.Write(Environment.NewLine);
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("Null");
+                        }
+                    }*/
+
+                }
+
+            }
+            return codes.AsEnumerable();
+
+
+        }
+    }
+
+    //Keeping This In Case I Need To Re-Export The Main & Side Quests Desc
     /*
 [HarmonyPatch(typeof(FlowProgress), "NotReallyActivated")]
 static class FlowProgress_patch
