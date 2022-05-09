@@ -204,7 +204,7 @@ namespace ENMod
             for (int i = 0; i < codes.Count - 1; i++)
             {
 
-                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand.ToString() != "\n" )
+                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand.ToString() != "\n")
                 {
                     Debug.Log("operand2 = " + codes[i].operand.ToString());
 
@@ -263,6 +263,16 @@ namespace ENMod
             yield return AccessTools.Method(typeof(BasePack_CharWindow), "InitPanel");
             yield return AccessTools.Method(typeof(ExploreWindow), "GetMoney");
             yield return AccessTools.Method(typeof(ExploreWindow), "RewardMiJiOrAcc");
+            yield return AccessTools.Method(typeof(FactionPack_RandomEventWindow), "ShowEventDes");
+            yield return AccessTools.Method(typeof(MilinWindow), "CalculateRewardStuff");
+            yield return AccessTools.Method(typeof(MilinWindow), "RewardFood");
+            yield return AccessTools.Method(typeof(BackMountWindow), "CalculateRewardStuff");
+            yield return AccessTools.Method(typeof(BackMountWindow), "RewardMedi");
+            yield return AccessTools.Method(typeof(BattleSummary), "StartShowAnimCo");
+            yield return AccessTools.Method(typeof(BackMountWindow), "RewardMedi");
+            yield return AccessTools.Method(typeof(BackMountWindow), "CalculateRewardStuff"); 
+
+
 
 
 
@@ -277,7 +287,7 @@ namespace ENMod
                 {
                     Debug.Log("operand 3 = " + codes[i].operand.ToString());
 
-                    if (Main.translationDict.ContainsKey(codes[i].operand.ToString().Replace("\n","\\n")))
+                    if (Main.translationDict.ContainsKey(codes[i].operand.ToString().Replace("\n", "\\n")))
                     {
                         codes[i].operand = codes[i].operand.ToString().Replace("\n", "\\n");
                         Debug.Log("Found Matching String ! = " + Main.translationDict[codes[i].operand.ToString()]);
