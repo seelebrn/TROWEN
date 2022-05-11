@@ -196,6 +196,8 @@ namespace ENMod
             yield return AccessTools.Method(typeof(DesPack_PractiseWindow), "GetCastTimes");
             yield return AccessTools.Method(typeof(DesPack_PractiseWindow), "GetTargetDes");
             yield return AccessTools.Method(typeof(EventPack_RandomEventWindow), "ShowEventDes");
+            yield return AccessTools.Method(typeof(StatUI), "ShowStat");
+
 
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
